@@ -1,0 +1,77 @@
+CREATE DATABASE kaoshi
+use  kaoshi 
+CREATE TABLE user(
+uid char(6) COMMENT '用户id（主键）' PRIMARY KEY,
+zip char(8) COMMENT '邮编' ,
+address VARCHAR(255) COMMENT '住址' ,
+name varchar(20) COMMENT '姓名' 
+) COMMENT '用户表';
+
+CREATE TABLE order_details(
+oid char(15) COMMENT '订单id（主键）' ,
+pid char(9) COMMENT '产品id（主键）',
+quantity int not null DEFAULT 0 COMMENT '数量' ,
+PRIMARY KEY(oid,pip)
+) COMMENT '订单详细表';
+
+CREATE TABLE order_basic(
+oid char(15) COMMENT '订单id（主键）' PRIMARY KEY,
+odate date COMMENT '发单日期' ,
+uid char(6) COMMENT '用户id' ,
+memo varchar(255) COMMENT '备注' ,
+FOREIGN key(uid) REFERENCES user(uid)
+) COMMENT '订单表';
+
+CREATE TABLE product(
+pid char(9) COMMENT '产品id（主键）' PRIMARY KEY,
+pname varchar(255) COMMENT '产品名' ,
+price FLOAT(10,1) COMMENT '价格'
+) COMMENT '产品表'
+
+insert into user VALUES
+(333333,10000000,'北京','王五'),
+(222222,10000000,'北京','李四');
+insert into order_basic VALUES
+(100001,20200901,111111,'苹果'),
+(100002,20200902,222222,'电脑'),
+(100003,20200903,333333,'手机')
+insert into order_details VALUES
+(100001,999901,3),(100001,999902,6),(100001,999903,1),
+(100002,999901,3),(100002,999904,6),(100002,999905,1),
+(100003,999904,3),(100003,999906,6),(100003,999909,1)
+insert into product VALUES
+(999901,'红富士苹果',5.5),(999902,'联想笔记本',5000)
+,(999903,'手机屏幕',300),(999904,'台灯',56.5)
+,(999905,'茶杯',15.5),(999906,'鼠标',100)
+
+create view order_detail_view as 
+(select 
+ob.oid as '订单id',
+ob.uid as '用户id',
+u.name as '姓名',
+p.pname as '产品名',
+p.price as '价格',
+od.quantity as '数量' from user u,product p,order_basic ob,order_details od 
+where u.uid=ob.uid and ob.oid=od.oid and od.pid=p.pid)
+
+select * from user where name like '刘%'
+
+SELECT oid, count(od.pid),sum(quantity * price)as total from product p,order_details od where od.pid=p.pid GROUP BY oid
+
+select * from product where price = (SELECT MAX(price) from product)
+
+select ob.uid ,u.name, count(DISTINCT od.pid) from user u, order_basic ob,order_details od 
+where u.uid=ob.uid and ob.oid=od.oid group by ob.uid 
+having count(DISTINCT od.pid)  = (SELECT count(distinct pid) from product)
+
+SELECT  pid ,pname FROM product 
+where pid not in(select DISTINCT(pid) from order_details)
+
+
+
+
+
+
+
+
+
